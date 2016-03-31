@@ -1115,11 +1115,11 @@ end
 GRAPHICS-WINDOW
 381
 79
-639
-358
+637
+356
 -1
 -1
-83.33333333333333
+15.625
 1
 30
 1
@@ -1130,9 +1130,9 @@ GRAPHICS-WINDOW
 0
 1
 0
-2
+15
 0
-2
+15
 1
 1
 1
@@ -1409,9 +1409,9 @@ reverse buttons-chosen-before
 
 PLOT
 336
-370
-665
-524
+368
+666
+527
 Agents' knowledge about their buttons
 total ticks
 knowledge (%)
@@ -1437,7 +1437,7 @@ knowledge-threshold
 knowledge-threshold
 0
 50
-41
+21
 1
 1
 %
@@ -1533,7 +1533,7 @@ CHOOSER
 pattern-name
 pattern-name
 "test1.txt" "test2.txt" "smile.txt" "sad.txt" "pi.txt"
-0
+3
 
 TEXTBOX
 383
