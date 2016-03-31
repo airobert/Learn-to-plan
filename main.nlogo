@@ -1098,8 +1098,8 @@ end
 GRAPHICS-WINDOW
 381
 79
-640
-359
+641
+360
 -1
 -1
 62.5
@@ -1551,11 +1551,11 @@ can-communicate-at-night
 -1000
 
 TEXTBOX
-74
+49
 16
-968
-43
-Multi-agent Epistemic Action Learning for Planning and Self-upgrading
+972
+74
+Action Learning for Planning and Self-upgrading in Multi-agent System
 24
 0.0
 1
