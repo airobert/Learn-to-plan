@@ -940,9 +940,9 @@ to-report calculate-bidding [world-after] ;  compare it with the goal and calcul
   let bidding-value 0
   foreach world-after[
      if (member? ? goal-on) [set bidding-value (bidding-value + 1)]
-     if (member? ? goal-off) [set bidding-value (bidding-value - 1)]
+     if (member? ? goal-off) [report -1]
      if (member? (? * -1) goal-off) [set bidding-value (bidding-value + 1)]
-     if (member? (? * -1) goal-on) [set bidding-value (bidding-value - 1)]
+     if (member? (? * -1) goal-on) [report -1]
     ]
   ; TODO: add the learning values on
 
@@ -986,16 +986,21 @@ to-report expected-world [world act]; to perform an action according to the agen
                                       ; no effect on this patch then it keeps it in the expected world
     ]
 
-     ; the agent also knows what is going to be true and false according to its knowledge of the action
-    foreach know-true [
-      ; get the index
-      let index (floor (? / 3)) + 1
-      ; get the color
-      if ((remainder ? 3) = 1) [set expected (fput index expected)]
-      if ((remainder ? 3) = 2) [set expected (fput (index * -1) expected)]
-      ; if it is green then keep it positive, it black then keep it negative
-      ]
-    ; the rest is not sure for the agent.
+   ; the agent also knows what is going to be true and false according to its knowledge of the action
+  foreach know-true [
+    let index (floor ((? - 1) / 3)) + 1
+    if ((remainder ? 3) = 1) [set expected (fput index expected)]
+    if ((remainder ? 3) = 2) [set expected (fput (index * -1) expected)]
+    ]
+  ; the rest is not sure for the agent.
+
+  foreach know-false [
+    let index (floor ((? - 1) / 3)) + 1
+    if (((remainder ? 3) = 2) and (member? (((floor ((? - 1) / 3)) + 1) * -1) world)) [set expected (fput index expected)]
+    if (((remainder ? 3) = 1) and (member? ((floor ((? - 1) / 3)) + 1) world)) [set expected (fput (index * -1) expected)]
+    ]
+
+
   set expected (remove-duplicates expected)
 
   report expected
@@ -1053,56 +1058,68 @@ end
 
 to output-program
    output-type "Personal-plan of Agent " output-type who output-print ":"
+   ifelse (length personal-plan = 0)
+   [output-type "the agent is not involved to the achievement of the goal"]
+   [ifelse(length personal-plan = 1)
+     [
+       ifelse (first personal-plan = -1)
+       [output-print "the agent is not involved to the achievement of the goal"]
+       [
+         output-type "press Button "
+         output-type (first personal-plan)
+         ]
+       ]
+     [
+        let personal-plan-in-order reverse personal-plan
+        ;First, output plans except last one.
+        let next-hour 0
+        foreach but-last personal-plan-in-order [
+          ifelse ( ? = -1)
+          [ ifelse (next-hour != 0)[
+             if (item (next-hour - 1) personal-plan-in-order != -1)
+             [output-print "sleep;"]
+             ]
+             [output-print "sleep;"]
+          ]
+          [output-type "press Button " output-type ?
+           ;to figure out who owns next executing button
 
-   let personal-plan-in-order reverse personal-plan
-   ;First, output plans except last one.
-   let next-hour 0
-   foreach but-last personal-plan-in-order [
-     ifelse ( ? = -1)
-     [ ifelse (next-hour != 0)[
-        if (item (next-hour - 1) personal-plan-in-order != -1)
-        [output-print "sleep;"]
-        ]
-        [output-print "sleep;"]
-     ]
-     [output-type "press Button " output-type ?
-      ;to figure out who owns next executing button
+          ifelse (item ( next-hour + 1) personal-plan-in-order != -1)
+             [output-print ", continues;"
+              ];keep awake
+             [ output-type "; notifies Agent "
+               output-type item (item ( next-hour + 1) (reverse buttons-chosen-before)) button-owners
+               output-print ";"
 
-     ifelse (item ( next-hour + 1) personal-plan-in-order != -1)
-        [output-print ", continues;"
-         ];keep awake
-        [ output-type "; notifies Agent "
-          output-type item (item ( next-hour + 1) (reverse buttons-chosen-before)) button-owners
-          output-print ";"
+                 ]
 
-            ]
+           ]
+          set next-hour next-hour + 1
+          ]
 
+        ;Second, output last plans
+        ifelse (last personal-plan-in-order = -1)
+        [
+         if (last (but-last personal-plan-in-order) != -1)
+            [output-print "sleep;"]
+         output-print "check the result and exit."] ; to confirm
+        [output-type "press Button "
+         output-type last  personal-plan-in-order
+         output-print "; notify all other agents: Goal Achieved."
+         output-print "check results and exit."]
+         output-print "========================================"
       ]
-     set next-hour next-hour + 1
-     ]
-
-   ;Second, output last plans
-   ifelse (last personal-plan-in-order = -1)
-   [
-    if (last (but-last personal-plan-in-order) != -1)
-       [output-print "sleep;"]
-    output-print "check the result and exit."] ; to confirm
-   [output-type "press Button "
-    output-type last  personal-plan-in-order
-    output-print "; notify all other agents: Goal Achieved."
-    output-print "check results and exit."]
-    output-print "========================================"
-
+    ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
 381
 79
-641
-360
+639
+358
 -1
 -1
-62.5
+83.33333333333333
 1
 30
 1
@@ -1113,9 +1130,9 @@ GRAPHICS-WINDOW
 0
 1
 0
-3
+2
 0
-3
+2
 1
 1
 1
@@ -1129,8 +1146,8 @@ SLIDER
 205
 buttons-each
 buttons-each
-1
-3
+2
+4
 2
 1
 1
@@ -1204,15 +1221,15 @@ NIL
 HORIZONTAL
 
 SLIDER
-17
+16
 214
-154
+153
 247
 vision-radius
 vision-radius
 0
-100
-80
+50
+30
 10
 1
 NIL
@@ -1334,7 +1351,7 @@ noise_pct
 noise_pct
 10
 20
-20
+10
 1
 1
 NIL
@@ -1396,7 +1413,7 @@ PLOT
 665
 524
 Agents' knowledge about their buttons
-total hour
+total ticks
 knowledge (%)
 0.0
 10.0
@@ -1418,9 +1435,9 @@ SLIDER
 288
 knowledge-threshold
 knowledge-threshold
-40
+0
 50
-46
+41
 1
 1
 %
@@ -1515,7 +1532,7 @@ CHOOSER
 129
 pattern-name
 pattern-name
-"test2.txt" "smile.txt" "sad.txt" "pi.txt"
+"test1.txt" "test2.txt" "smile.txt" "sad.txt" "pi.txt"
 0
 
 TEXTBOX
